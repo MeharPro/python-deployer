@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Python Shell: {{ filename }}</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        #code, #output {
+            width: 100%;
+            height: 200px;
+            background-color: black;
+            color: white;
+            font-family: monospace;
+            overflow-y: scroll;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        #input {
+            width: 100%;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <h1>Python Shell: {{ filename }}</h1>
+    <h2>Code:</h2>
+    <pre id="code">{{ code }}</pre>
+    <h2>Output:</h2>
+    <div id="output"></div>
+    <input type="text" id="input" placeholder="Enter your input here">
+    
+    <script>
+        $(document).ready(function() {
+            var filename = "{{ filename }}";
+            var output = $('#output');
+            var input = $('#input');
+
+            function appendToOutput(text) {
+                output.append(text.replace(/\n/g, '<br>'));
+                output.scrollTop(output[0].scrollHeight);
+            }
+
+            function runCode(userInput = '') {
+                $.ajax({
+                    url: '/run/' + filename,
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({input: userInput}),
+                    success: function(response) {
+                        appendToOutput(response.output);
+                    },
+                    error: function() {
+                        appendToOutput('Error occurred while processing the code.');
+                    }
+                });
+            }
+
+            input.keypress(function(e) {
+                if (e.which == 13) {  // Enter key
+                    var userInput = input.val();
+                    input.val('');
+                    runCode(userInput);
+                }
+            });
+
+            // Initial run
+            runCode();
+        });
+    </script>
+</body>
+</html>
